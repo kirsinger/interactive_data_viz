@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+        <link rel="stylesheet" type="text/css" href="visualisation_styles.css"/>
+    </head>
+    <body>
+        <p>
+            Click to Update
+        </p>
+        <!--
+        <script type="text/javascript">
+
+            //TODO: Abstract each visualisation into a separate <script> tag
+            //      This will allows scatterplots and histograms to be positioned and used independently
+            //TODO: Continue from Chapter 9, Updating Axes
+
+            /* Global Variable Declarations */
+
+            var dataset;
+
+            var svgWidth = 700; //px
+            var svgHeight = 600; //px
+            var barPadding = 1; //px
+            var scatterPointRadius = 10; //px
+            var scatterPlotPadding = 50; //px
+
+            var xAxis = d3.svg.axis();
+            var yAxis = d3.svg.axis();
+
+            var xScale;
+            var yScale;
+
+            var appRatioFormat = d3.format(".2");
+
+            /* Visualisation Code */
+            dataset = generateDataSet(25);
+
+            xScale = d3.scale.ordinal()
+                .domain(d3.range(dataset.length))
+                .rangeRoundBands([0, svgWidth], 0.05);
+
+            yScale = d3.scale.linear()
+                .domain([0, d3.max(dataset)])
+                .range([0, svgHeight]);
+
+            generateBarChart();
+
+            d3.select("p")
+                .on("click", function() {
+                    var svg = d3.selectAll("svg");
+
+                    var dataset = generateDataSet(25);
+                    yScale.domain([0, d3.max(dataset)]);
+
+                    svg.selectAll("rect")
+                        .data(dataset)
+                        .transition()
+                        .duration(500)
+                        .delay(function(d, i) {
+                            return (i / dataset.length) * 500;
+                        })
+                        .ease("linear")
+                        .attr("y", function(d) {
+                            return svgHeight - yScale(d);
+                        })
+                        .attr("height", function(d) {
+                            return yScale(d);
+                        })
+                        .attr("fill", function(d) {
+                            return "rgb(0, 0, " + (Math.floor(d * 5)) + ")";
+                        });
+
+                    svg.selectAll("text")
+                        .data(dataset)
+                        .transition()
+                        .duration(500)
+                        .delay(function(d, i) {
+                            return (i / dataset.length) * 500;
+                        })
+                        .ease("linear")
+                        .text(function(d) {
+                            return Math.floor(d);
+                        })
+                        .attr("y", function(d) {
+                            return svgHeight - yScale(d) + 10;
+                        })
+                });
+
+            /* Visualisation Functions */
+
+            function generateBarChart() {
+                var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", svgWidth)
+                    .attr("height", svgHeight);
+
+                svg.selectAll("rect")
+                    .data(dataset)
+                    .enter()
+                    .append("rect")
+                    .attr("y", svgHeight)
+                    .attr("height", 0)
+
+                svg.selectAll("rect")
+                    .data(dataset)
+                    .attr("x", function(d, i) {
+                        return xScale(i);
+                    })
+                    .attr("width", xScale.rangeBand());
+
+                svg.selectAll("text")
+                    .data(dataset)
+                    .enter()
+                    .append("text")
+                    .attr("y", svgHeight);
+
+                svg.selectAll("text")
+                    .attr("x", function(d, i) {
+                        return xScale(i) + (xScale.rangeBand() / 2);
+                    })
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "8px")
+                    .attr("fill", "white")
+                    .attr("text-anchor", "middle");
+            }
+
+
+            /* Helper Functions */
+
+            function generateDataSet(size) {
+                var maxValue = 100;
+                var dataset = [];
+                for (var i = 0; i < size; i++) {
+                    dataset.push(Math.random() * maxValue);
+                }
+                return dataset;
+            }
+
+            function round(value, exp) {
+                if (typeof exp === 'undefined' || +exp === 0)
+                    return Math.round(value);
+
+                value = +value;
+                exp = +exp;
+
+                if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
+                    return NaN;
+
+                // Shift
+                value = value.toString().split('e');
+                value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
+
+                // Shift back
+                value = value.toString().split('e');
+                return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
+            }
+        </script>
+        -->
+        <script type="text/javascript">
+
+            //////////////////
+            /* Scatter Plot */
+            //////////////////
+
+            var dataset;
+
+            /* Visualisation Code */
+
+            d3.tsv("spotjobs_app_ratio.csv", function(error, data) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log(data);
+
+                    // Scatter Plot //
+
+                    //Load in the data
+                    //dataset = data;
+
+                    //Random testing data set
+                    var x_data = generateDataSet(50, 100);
+                    var y_data = generateDataSet(50 ,200);
+                    var r_data = generateDataSet(50 ,200);
+
+                    dataset = [];
+
+                    for (var i = 0; i < x_data.length; i++) {
+                        dataset.push({
+                            'x': x_data[i],
+                            'y': y_data[i],
+                            'r': r_data[i]
+                        })
+                    }
+
+                    //Generate visualisation
+                    generateScatterPlot(dataset, 'x', 'y', 'r', 'r', textLabels=false);
+                }
+            });
+
+            d3.select("p")
+                .on("click", function() {
+
+                    var x_data = generateDataSet(50, 500);
+                    var y_data = generateDataSet(50 ,700);
+                    var r_data = generateDataSet(50 ,400);
+
+                    dataset = [];
+
+                    for (var i = 0; i < x_data.length; i++) {
+                        dataset.push({
+                            'x': x_data[i],
+                            'y': y_data[i],
+                            'r': r_data[i]
+                        })
+                    }
+
+                    updateScatterPlot(dataset, 'x', 'y', 'r', 'r', textLabels=false);
+
+                });
+
+            /* Visualisation Functions */
+
+            function updateScatterPlot(dataset, x, y, radius, label, textLabels) {
+                var svg = d3.selectAll("svg");
+
+                //Visual constants
+                //TODO: Figure ways of setting these intelligently and/or parameterising
+                var svgWidth = 700; //px
+                var svgHeight = 600; //px
+                var scatterPointRadius = 10; //px
+                var scatterPlotPadding = 50; //px
+
+                var xScale = d3.scale.linear();
+                var yScale = d3.scale.linear();
+                var rScale = d3.scale.linear();
+
+                var labelFormat = d3.format(".2")
+
+                //Set up the scaling
+                xDomainMin = d3.min(dataset, function(d) {
+                    return parseInt(d[x]);
+                });
+                xDomainMax = d3.max(dataset, function(d) {
+                    return parseInt(d[x]);
+                });
+                xScale.domain([xDomainMin, xDomainMax])
+                    .range([scatterPlotPadding, svgWidth - scatterPlotPadding]);
+
+                yDomainMin = d3.min(dataset, function(d) {
+                    return parseFloat(d[y]);
+                });
+                yDomainMax = d3.max(dataset, function(d) {
+                    return parseFloat(d[y]);
+                });
+                yScale.domain([yDomainMin, yDomainMax])
+                    .range([svgHeight - scatterPlotPadding, scatterPlotPadding]);
+
+                rScale.domain([yDomainMin, yDomainMax])
+                    .range([1, scatterPointRadius]);
+
+                //Points
+                svg.selectAll("circle")
+                    .data(dataset)
+                    .transition()
+                    .duration(1000)
+                    .attr("cx", (function(d) {
+                        return xScale(d[x]);
+                    }))
+                    .attr("cy", (function(d) {
+                        return yScale(d[y]);
+                    }))
+                    .attr("r", function (d) {
+                        return rScale(d[radius]);
+                    });
+
+                //Point labels
+                if (textLabels) {
+                    svg.selectAll("text")
+                        .data(dataset)
+                        .transition()
+                        .duration(1000)
+                        .text(function(d) {
+                            return labelFormat(d[label]);
+                        })
+                        .attr('x', function(d, i) {
+                            return xScale(d[x]);
+                        })
+                        .attr('y', function(d) {
+                            return yScale(d[y]) - scatterPointRadius;
+                        })
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "11px")
+                        .attr("fill", "black")
+                        .attr("text-anchor", "middle");
+                }
+
+                //Axes
+                svg.select(".x.axis")
+                    .transition()
+                    .duration(1000)
+                    .call(xAxis);
+
+                svg.select(".y.axis")
+                    .transition()
+                    .duration(1000)
+                    .call(yAxis);
+            }
+
+            function generateScatterPlot(dataset, x, y, radius, label, textLabels) {
+                //Visual constants
+                //TODO: Figure ways of setting these intelligently and/or parameterising
+                var svgWidth = 700; //px
+                var svgHeight = 600; //px
+                var scatterPointRadius = 10; //px
+                var scatterPlotPadding = 50; //px
+
+                var xAxis = d3.svg.axis();
+                var yAxis = d3.svg.axis();
+
+                var xScale = d3.scale.linear();
+                var yScale = d3.scale.linear();
+                var rScale = d3.scale.linear();
+
+                var labelFormat = d3.format(".2")
+
+                //Set up the scaling
+                xDomainMin = d3.min(dataset, function(d) {
+                    return parseInt(d[x]);
+                });
+                xDomainMax = d3.max(dataset, function(d) {
+                    return parseInt(d[x]);
+                });
+                xScale.domain([xDomainMin, xDomainMax])
+                    .range([scatterPlotPadding, svgWidth - scatterPlotPadding]);
+
+                yDomainMin = d3.min(dataset, function(d) {
+                    return parseFloat(d[y]);
+                });
+                yDomainMax = d3.max(dataset, function(d) {
+                    return parseFloat(d[y]);
+                });
+                yScale.domain([yDomainMin, yDomainMax])
+                    .range([svgHeight - scatterPlotPadding, scatterPlotPadding]);
+
+                rScale.domain([yDomainMin, yDomainMax])
+                    .range([1, scatterPointRadius]);
+
+                //Set up axes
+                xAxis.scale(xScale);
+
+                yAxis.scale(yScale)
+                    .orient("left")
+                    .tickFormat(labelFormat);
+
+                //Canvas
+                var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", svgWidth)
+                    .attr("height", svgHeight);
+
+                //Points
+                svg.selectAll("circle")
+                    .data(dataset)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", (function(d) {
+                        return xScale(d[x]);
+                    }))
+                    .attr("cy", (function(d) {
+                        return yScale(d[y]);
+                    }))
+                    .attr("r", function (d) {
+                        return rScale(d[radius]);
+                    });
+
+                //Point labels
+                if (textLabels) {
+                    svg.selectAll("text")
+                        .data(dataset)
+                        .enter()
+                        .append("text")
+                        .text(function(d) {
+                            return labelFormat(d[label]);
+                        })
+                        .attr('x', function(d, i) {
+                            return xScale(d[x]);
+                        })
+                        .attr('y', function(d) {
+                            return yScale(d[y]) - scatterPointRadius;
+                        })
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "11px")
+                        .attr("fill", "black")
+                        .attr("text-anchor", "middle");
+                }
+
+                //Axes
+                svg.append("g")
+                    .call(xAxis)
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0, " + (svgHeight - scatterPlotPadding) + ")");
+
+                svg.append("g")
+                    .call(yAxis)
+                    .attr("class", "y axis")
+                    .attr("transform", "translate("+ scatterPlotPadding + ", 0)");
+            }
+
+            function generateDataSet(size, maxValue) {
+                var dataset = [];
+                for (var i = 0; i <= size; i++) {
+                    dataset.push(Math.random() * maxValue)
+                }
+                return dataset
+            }
+
+        </script>
+    </body>
+</html>
